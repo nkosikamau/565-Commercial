@@ -1,0 +1,930 @@
+firewall {
+    all-ping enable
+    broadcast-ping disable
+        }
+        address-group VLAN20-Public {
+            address 135.180.28.152
+            description ""
+        }
+        address-group VLAN30-Public {
+            address 135.180.28.153
+            description ""
+        }
+        address-group VLAN40-Public {
+            address 135.180.28.153
+            description ""
+        }
+        network-group VLAN1 {
+            description ""
+            network 192.168.69.0/24
+        }
+        network-group VLAN20 {
+            description ""
+            network 10.10.2.0/24
+        }
+        network-group VLAN30 {
+            description ""
+            network 10.10.3.0/24
+        }
+        network-group VLAN40 {
+            description ""
+            network 10.10.4.0/24
+        }
+    }
+    ipv6-receive-redirects disable
+    ipv6-src-route disable
+    ip-src-route disable
+    log-martians enable
+    name VLAN_IN {
+        default-action accept
+        description ""
+        rule 1 {
+            action accept
+            description "Allow Established/Related"
+            log disable
+            protocol all
+            state {
+                established enable
+                invalid disable
+                new disable
+                related enable
+            }
+        }
+        rule 2 {
+            action drop
+            description "Drop LAN"
+            destination {
+                group {
+                    network-group VLAN1
+                }
+            }
+            log disable
+            protocol all
+        }
+    }
+    name VLAN_LOCAL {
+        default-action drop
+        description ""
+        rule 1 {
+            action accept
+            description "Allow DNS"
+            destination {
+                port 53
+            }
+            log disable
+            protocol udp
+        }
+        rule 2 {
+            action accept
+            description "Allow DHCP"
+            destination {
+                port 67
+            }
+            log disable
+            protocol udp
+        }
+    }
+    name WAN_IN {
+        default-action drop
+        description "WAN to internal"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            state {
+                established enable
+                related enable
+            }
+        }
+        rule 20 {
+            action accept
+            description "Open Port: 7575"
+            destination {
+                port 7575
+            }
+            log disable
+            protocol tcp
+        }
+        rule 30 {
+            action accept
+            description "Open Port: 7676"
+            destination {
+                port 7676
+            }
+            log disable
+            protocol tcp
+        }
+        rule 40 {
+            action accept
+            description "Open Port: 7777"
+            destination {
+                port 7777
+            }
+            log disable
+            protocol tcp
+        }
+        rule 50 {
+            action accept
+            description "Open Port: 7878"
+            destination {
+                port 7878
+            }
+            log disable
+            protocol tcp
+        }
+        rule 60 {
+            action accept
+            description "Open Port: 161"
+            destination {
+                port 161
+            }
+            log disable
+            protocol udp
+        }
+        rule 70 {
+            action accept
+            description "EdgeSwitch Port: 2nd Floor"
+            destination {
+                address 192.168.69.5
+                port 7575
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 80 {
+            action accept
+            description "EdgeSwitch Port: 3rd Floor"
+            destination {
+                address 192.168.69.6
+                port 7676
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 90 {
+            action accept
+            description "EdgeSwitch Port: 4th Floor"
+            destination {
+                address 192.168.69.7
+                port 7777
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 100 {
+            action accept
+            description "DLI Port"
+            destination {
+                address 192.168.69.8
+                port 7878
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 110 {
+            action drop
+            description "Drop invalid state"
+            state {
+                invalid enable
+            }
+        }
+    }
+    name WAN_LOCAL {
+        default-action drop
+        description "WAN to router"
+        rule 10 {
+            action accept
+            description "Allow established/related"
+            state {
+                established enable
+                related enable
+            }
+        }
+        rule 20 {
+            action accept
+            description "Ping for HQs"
+            destination {
+                group {
+                    address-group ADDRv4_eth0
+                }
+            }
+            log disable
+            protocol icmp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 30 {
+            action accept
+            description "SSH for HQs"
+            destination {
+                group {
+                    address-group ADDRv4_eth0
+                }
+                port 22,80,443,161
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 40 {
+            action accept
+            description "SNMP: Zabbix"
+            destination {
+                group {
+                    address-group ADDRv4_eth0
+                }
+                port 161
+            }
+            log disable
+            protocol udp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 50 {
+            action accept
+            description "EdgeSwitch Port: 2nd Floor"
+            destination {
+                address 135.180.28.146
+                port 7575
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 60 {
+            action accept
+            description "EdgeSwitch Port: 3rd Floor"
+            destination {
+                address 135.180.28.146
+                port 7676
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 70 {
+            action accept
+            description "EdgeSwitch Port: 4th Floor"
+            destination {
+                address 135.180.28.146
+                port 7777
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 80 {
+            action accept
+            description "DLI Port"
+            destination {
+                address 135.180.28.146
+                port 7878
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+        }
+        rule 90 {
+            action drop
+            description "Drop invalid state"
+            state {
+                invalid enable
+            }
+        }
+    }
+    receive-redirects disable
+    send-redirects enable
+    source-validation disable
+    syn-cookies enable
+}
+interfaces {
+    bridge br0 {
+        address 192.168.69.254/24
+        aging 300
+        bridged-conntrack disable
+        description "Local Bridge"
+        hello-time 2
+        max-age 20
+        priority 32768
+        promiscuous enable
+        stp false
+    }
+    ethernet eth0 {
+        address 135.180.28.146/28
+        address 135.180.28.152/28
+        address 135.180.28.153/28
+        address 135.180.28.154/28
+        description Internet
+        duplex auto
+        firewall {
+            in {
+                name WAN_IN
+            }
+            local {
+                name WAN_LOCAL
+            }
+        }
+        ip {
+            enable-proxy-arp
+        }
+        speed auto
+    }
+    ethernet eth1 {
+        bridge-group {
+            bridge br0
+        }
+        description "Local Bridge"
+        duplex auto
+        speed auto
+        vif 20 {
+            address 10.10.2.254/24
+            firewall {
+                in {
+                    name VLAN_IN
+                }
+                local {
+                    name VLAN_LOCAL
+                }
+            }
+            mtu 1500
+        }
+        vif 30 {
+            address 10.10.3.254/24
+            firewall {
+                in {
+                    name VLAN_IN
+                }
+                local {
+                    name VLAN_LOCAL
+                }
+            }
+            mtu 1500
+        }
+        vif 40 {
+            address 10.10.4.254/24
+            firewall {
+                in {
+                    name VLAN_IN
+                }
+                local {
+                    name VLAN_LOCAL
+                }
+            }
+            mtu 1500
+        }
+    }
+    ethernet eth2 {
+        bridge-group {
+            bridge br0
+        }
+        description "Power Switch (DLI)"
+        duplex auto
+        speed auto
+    }
+    ethernet eth3 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth4 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth5 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth6 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth7 {
+        duplex auto
+        speed auto
+    }
+    loopback lo {
+    }
+    vti vti0 {
+        address 10.100.23.2/30
+        mtu 1436
+    }
+}
+port-forward {
+    auto-firewall enable
+    hairpin-nat enable
+    lan-interface eth1
+    lan-interface eth2
+    wan-interface eth0
+}
+protocols {
+    static {
+        interface-route 10.10.10.0/24 {
+            next-hop-interface vti0 {
+            }
+        }
+    }
+}
+service {
+    dhcp-server {
+        disabled false
+        hostfile-update disable
+        shared-network-name LAN_BR {
+            authoritative enable
+            subnet 192.168.69.0/24 {
+                default-router 192.168.69.254
+                dns-server 192.168.69.254
+                lease 86400
+                start 192.168.69.38 {
+                    stop 192.168.69.243
+                }
+                static-mapping DLI {
+                    ip-address 192.168.69.8
+                    mac-address 7C:E1:FF:02:AA:6B
+                }
+                static-mapping ES-2ndFloor {
+                    ip-address 192.168.69.5
+                    mac-address b4:fb:e4:53:13:9b
+                }
+            }
+        }
+        shared-network-name VLAN20 {
+            authoritative disable
+            subnet 10.10.2.0/24 {
+                default-router 10.10.2.254
+                dns-server 10.10.2.254
+                lease 3600
+                start 10.10.2.1 {
+                    stop 10.10.2.253
+                }
+                static-mapping 565Commcercial2FAP01 {
+                    ip-address 10.10.2.10
+                    mac-address e0:cb:bc:90:12:51
+                }
+                static-mapping 565Commcercial2FAP02 {
+                    ip-address 10.10.2.11
+                    mac-address e0:cb:bc:90:12:6d
+                }
+                static-mapping 565Commcercial2FAP05 {
+                    ip-address 10.10.2.14
+                    mac-address e0:cb:bc:90:11:e7
+                }
+                static-mapping 565Commcercial2FAP06 {
+                    ip-address 10.10.2.15
+                    mac-address e0:cb:bc:90:12:7b
+                }
+                static-mapping 565Commercial2FAP03 {
+                    ip-address 10.10.2.12
+                    mac-address e0:cb:bc:90:12:78
+                }
+                static-mapping 565Commercial2FAP04 {
+                    ip-address 10.10.2.13
+                    mac-address e0:cb:bc:90:12:6c
+                }
+            }
+        }
+        shared-network-name VLAN30 {
+            authoritative disable
+            subnet 10.10.3.0/24 {
+                default-router 10.10.3.254
+                dns-server 10.10.3.254
+                lease 3600
+                start 10.10.3.1 {
+                    stop 10.10.3.253
+                }
+                static-mapping MerakiLogitech {
+                    ip-address 10.10.3.24
+                    mac-address 98:18:88:5e:7b:d1
+                }
+            }
+        }
+        shared-network-name VLAN40 {
+            authoritative disable
+            subnet 10.10.4.0/24 {
+                default-router 10.10.4.254
+                dns-server 10.10.4.254
+                lease 86400
+                start 10.10.4.1 {
+                    stop 10.10.4.253
+                }
+            }
+        }
+        static-arp disable
+        use-dnsmasq disable
+    }
+    dns {
+        forwarding {
+            cache-size 150
+            listen-on br0
+            listen-on eth1.20
+            listen-on eth1.30
+            listen-on eth1.40
+        }
+    }
+    gui {
+        http-port 80
+        https-port 443
+        older-ciphers enable
+    }
+    nat {
+        rule 1 {
+            description "VLAN20: Routing"
+            destination {
+                group {
+                    address-group VLAN20-Public
+                }
+            }
+            inbound-interface eth0
+            inside-address {
+                address 10.10.2.0
+            }
+            log disable
+            protocol all
+            type destination
+        }
+        rule 2 {
+            description "VLAN30: Routing"
+            destination {
+                group {
+                    address-group VLAN30-Public
+                }
+            }
+            inbound-interface eth0
+            inside-address {
+                address 10.10.3.0
+            }
+            log disable
+            protocol all
+            type destination
+        }
+        rule 3 {
+            description "VLAN40: Routing"
+            destination {
+                group {
+                    address-group VLAN40-Public
+                }
+            }
+            inbound-interface eth0
+            inside-address {
+                address 10.10.4.0
+            }
+            log disable
+            protocol all
+            type destination
+        }
+        rule 4 {
+            description "EdgeSwitch Port: 2nd Floor"
+            destination {
+                address 135.180.28.146
+                port 7575
+            }
+            inbound-interface eth0
+            inside-address {
+                address 192.168.69.5
+                port 7575
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+            type destination
+        }
+        rule 5 {
+            description "EdgeSwitch Port: 3rd Floor"
+            destination {
+                address 135.180.28.146
+                port 7676
+            }
+            inbound-interface eth0
+            inside-address {
+                address 192.168.69.6
+                port 7676
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+            type destination
+        }
+        rule 6 {
+            description "EdgeSwitch Port: 4th Floor"
+            destination {
+                address 135.180.28.146
+                port 7777
+            }
+            inbound-interface eth0
+            inside-address {
+                address 192.168.69.7
+                port 7777
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+            type destination
+        }
+        rule 7 {
+            description "DLI Port"
+            destination {
+                address 135.180.28.146
+                port 7878
+            }
+            inbound-interface eth0
+            inside-address {
+                address 192.168.69.8
+                port 7878
+            }
+            log disable
+            protocol tcp
+            source {
+                group {
+                    address-group HQStaticIPs
+                }
+            }
+            type destination
+        }
+        rule 5000 {
+            description "VLAN20: Routing"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.152
+            }
+            protocol all
+            source {
+                group {
+                    network-group VLAN20
+                }
+            }
+            type source
+        }
+        rule 5001 {
+            description "VLAN30: Routing"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.153
+            }
+            protocol all
+            source {
+                group {
+                    network-group VLAN30
+                }
+            }
+            type source
+        }
+        rule 5002 {
+            description "VLAN40: Routing"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.154
+            }
+            protocol all
+            source {
+                group {
+                    network-group VLAN40
+                }
+            }
+            type source
+        }
+        rule 5003 {
+            description "EdgeSwitch Port: 2nd Floor"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.146
+                port 7575
+            }
+            protocol tcp
+            source {
+                address 192.168.69.5
+                port 7575
+            }
+            type source
+        }
+        rule 5004 {
+            description "EdgeSwitch Port: 3rd Floor"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.146
+                port 7676
+            }
+            protocol tcp
+            source {
+                address 192.168.69.6
+                port 7676
+            }
+            type source
+        }
+        rule 5005 {
+            description "EdgeSwitch Port: 4th Floor"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.146
+                port 7777
+            }
+            protocol tcp
+            source {
+                address 192.168.69.7
+                port 7777
+            }
+            type source
+        }
+        rule 5006 {
+            description "DLI Port"
+            log disable
+            outbound-interface eth0
+            outside-address {
+                address 135.180.28.146
+                port 7878
+            }
+            protocol tcp
+            source {
+                address 192.168.69.8
+                port 7878
+            }
+            type source
+        }
+        rule 5007 {
+            description "masquerade for WAN"
+            outbound-interface eth0
+            type masquerade
+        }
+    }
+    snmp {
+        community DBZVegeta {
+            authorization ro
+            client 64.227.4.79
+        }
+        listen-address 135.180.28.146 {
+            port 161
+        }
+    }
+    ssh {
+        port 22
+        protocol-version v2
+    }
+    unms {
+        connection wss://unifi.breather.com:443+ohwiMPUvdubhyaFow54FRQayAbz9iEitW024SQHewXIAAAAA+allowSelfSignedCertificate
+    }
+}
+system {
+    gateway-address 135.180.28.145
+    host-name 565CommercialSt-ERPRO
+    login {
+        user breatheradmin {
+            authentication {
+                encrypted-password $6$eqyMTMeejb$qd6Bs6oDeyO2k.dxcEq7BEmA7iGNi.gfxvFwQMq8/Lv89Ih98DcsWc7TvZJzVNf9chEwYcqEDDoeLXQdtaFYk1
+            }
+            level admin
+        }
+    }
+    name-server 1.1.1.1
+    name-server 1.0.0.1
+    ntp {
+        server 0.ubnt.pool.ntp.org {
+        }
+        server 1.ubnt.pool.ntp.org {
+        }
+        server 2.ubnt.pool.ntp.org {
+        }
+        server 3.ubnt.pool.ntp.org {
+        }
+    }
+    offload {
+        hwnat disable
+        ipsec enable
+        ipv4 {
+            bonding disable
+            forwarding enable
+            gre disable
+            pppoe enable
+            vlan enable
+        }
+        ipv6 {
+            bonding disable
+            forwarding disable
+            pppoe disable
+            vlan disable
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level notice
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+    time-zone America/Los_Angeles
+    traffic-analysis {
+        dpi disable
+        export disable
+    }
+}
+vpn {
+    ipsec {
+        allow-access-to-local-interface disable
+        auto-firewall-nat-exclude enable
+        esp-group FOO0 {
+            compression disable
+            lifetime 3600
+            mode tunnel
+            pfs enable
+            proposal 1 {
+                encryption aes128
+                hash sha1
+            }
+        }
+        ike-group FOO0 {
+            ikev2-reauth no
+            key-exchange ikev1
+            lifetime 28800
+            proposal 1 {
+                dh-group 14
+                encryption aes128
+                hash sha1
+            }
+        }
+        site-to-site {
+            peer 64.79.117.30 {
+                authentication {
+                    mode pre-shared-secret
+                    pre-shared-secret <Br3ath3rispeace&quiet>
+                }
+                connection-type initiate
+                description ipsec
+                ike-group FOO0
+                ikev2-reauth inherit
+                local-address 135.180.28.146
+                vti {
+                    bind vti0
+                    esp-group FOO0
+                }
+            }
+        }
+    }
+}
+
+
+/* Warning: Do not remove the following line. */
+/* === vyatta-config-version: "config-management@1:conntrack@1:cron@1:dhcp-relay@1:dhcp-server@4:firewall@5:ipsec@5:nat@3:qos@1:quagga@2:suspend@1:system@4:ubnt-pptp@1:ubnt-udapi-server@1:ubnt-unms@1:ubnt-util@1:vrrp@1:vyatta-netflow@1:webgui@1:webproxy@1:zone-policy@1" === */
+/* Release version: v2.0.8-hotfix.1.5278088.200305.1641 */
+
